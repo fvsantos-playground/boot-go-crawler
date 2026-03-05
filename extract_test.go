@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"net/url"
+	"reflect"
 	"testing"
 )
 
@@ -74,5 +76,73 @@ func TestNoParagraphs(t *testing.T) {
 		t.Errorf("expected %q, got %q", "", actual)
 	} else if actual != "" {
 		t.Errorf("expected %q, got %q", "", actual)
+	}
+}
+
+func TestGetURLsFromHTMLAbsolute(t *testing.T) {
+	inputURL := "https://crawler-test.com"
+	inputBody := `<html><body><a href="https://crawler-test.com"><span>Boot.dev</span></a></body></html>`
+
+	baseURL, err := url.Parse(inputURL)
+	if err != nil {
+		t.Errorf("couldn't parse input URL: %v", err)
+		return
+	}
+
+	actual, err := getURLsFromHTML(inputBody, baseURL)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	expected := []string{"https://crawler-test.com"}
+	if !reflect.DeepEqual(actual, expected) {
+		t.Errorf("expected %v, got %v", expected, actual)
+	}
+}
+
+func TestGetURLsFromHTMLRelative(t *testing.T) {
+	inputURL := "https://crawler-test.com"
+	inputBody := `<html><body><a href="/relative-path"><span>Boot.dev</span></a></body></html>`
+
+	baseURL, err := url.Parse(inputURL)
+	if err != nil {
+		t.Errorf("couldn't parse input URL: %v", err)
+		return
+	}
+
+	actual, err := getURLsFromHTML(inputBody, baseURL)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	expected := []string{"https://crawler-test.com/relative-path"}
+	if !reflect.DeepEqual(actual, expected) {
+		t.Errorf("expected %v, got %v", expected, actual)
+	}
+}
+
+func TestGetMultipleURLsFromHTMLMixed(t *testing.T) {
+	inputURL := "https://crawler-test.com"
+	inputBody := `<html><body>
+	<a href="/relative-path"><span>Boot.dev</span></a>
+	<a href="https://crawler-test.com/absolute-path"><span>Boot.dev</span></a>
+	<a href="https://external.com"><span>External</span></a>
+	<a href="/relative-path"><span>Boot.dev</span></a>
+	</body></html>`
+
+	baseURL, err := url.Parse(inputURL)
+	if err != nil {
+		t.Errorf("couldn't parse input URL: %v", err)
+		return
+	}
+
+	actual, err := getURLsFromHTML(inputBody, baseURL)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	expected := []string{"https://crawler-test.com/relative-path", "https://crawler-test.com/absolute-path", "https://external.com", "https://crawler-test.com/relative-path"}
+	if !reflect.DeepEqual(actual, expected) {
+		t.Errorf("expected %v, got %v", expected, actual)
 	}
 }
