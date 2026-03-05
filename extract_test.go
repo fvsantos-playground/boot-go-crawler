@@ -146,3 +146,67 @@ func TestGetMultipleURLsFromHTMLMixed(t *testing.T) {
 		t.Errorf("expected %v, got %v", expected, actual)
 	}
 }
+
+func TestGetImagesFromHTMLRelative(t *testing.T) {
+	inputURL := "https://crawler-test.com"
+	inputBody := `<html><body><img src="/logo.png" alt="Logo"></body></html>`
+
+	baseURL, err := url.Parse(inputURL)
+	if err != nil {
+		t.Errorf("couldn't parse input URL: %v", err)
+		return
+	}
+
+	actual, err := getImagesFromHTML(inputBody, baseURL)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	expected := []string{"https://crawler-test.com/logo.png"}
+	if !reflect.DeepEqual(actual, expected) {
+		t.Errorf("expected %v, got %v", expected, actual)
+	}
+}
+
+func TestNoImageFromHTML(t *testing.T) {
+	inputURL := "https://crawler-test.com"
+	inputBody := `<html><body><p>No image</p</body></html>`
+
+	baseUrl, err := url.Parse(inputURL)
+	if err != nil {
+		t.Errorf("couldn't parse input URL: %v", err)
+		return
+	}
+
+	actual, err := getImagesFromHTML(inputBody, baseUrl)
+	var expected []string
+	if !reflect.DeepEqual(actual, expected) {
+		t.Errorf("expected %v, got %v", expected, actual)
+	}
+}
+
+func TestGetMultipleImagesFromHTMLMixed(t *testing.T) {
+	inputURL := "https://crawler-test.com"
+	inputBody := `<html><body>
+	<img src="/relative-path"><span>Boot.dev</span></img></img>
+	<img src="https://crawler-test.com/absolute-path"><span>Boot.dev</span></img>
+	<img src="https://external.com"><span>External</span></img>
+	<img src="/relative-path"><span>Boot.dev</span></img>
+	</body></html>`
+
+	baseURL, err := url.Parse(inputURL)
+	if err != nil {
+		t.Errorf("couldn't parse input URL: %v", err)
+		return
+	}
+
+	actual, err := getImagesFromHTML(inputBody, baseURL)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	expected := []string{"https://crawler-test.com/relative-path", "https://crawler-test.com/absolute-path", "https://external.com", "https://crawler-test.com/relative-path"}
+	if !reflect.DeepEqual(actual, expected) {
+		t.Errorf("expected %v, got %v", expected, actual)
+	}
+}
