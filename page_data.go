@@ -1,6 +1,9 @@
 package main
 
-import "net/url"
+import (
+	"fmt"
+	"net/url"
+)
 
 type PageData struct {
 	URL            string
@@ -11,6 +14,7 @@ type PageData struct {
 }
 
 func extractPageData(html, pageURL string) (PageData, error) {
+	fmt.Printf("Extracting data from %v...\n", pageURL)
 	pageData := PageData{
 		URL: pageURL,
 	}

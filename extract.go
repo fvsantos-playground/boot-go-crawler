@@ -122,7 +122,7 @@ func getHTML(rawURL string) (string, error) {
 	}
 
 	content_type := res.Header.Get("Content-Type")
-	if content_type != "text/html" {
+	if !strings.Contains(strings.ToLower(content_type), "text/html") {
 		return "", fmt.Errorf("Invalid content type: %v", content_type)
 	}
 
@@ -132,4 +132,55 @@ func getHTML(rawURL string) (string, error) {
 	}
 
 	return string(data), nil
+}
+
+func crawlPage(rawBaseURL, rawCurrentURL string, pages map[string]int) {
+	baseUrl, err := url.Parse(rawBaseURL)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	currentURL, err := url.Parse(rawCurrentURL)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	if currentURL.Host != baseUrl.Host {
+		fmt.Printf("Skipping %v because it is not on the same domain as %v\n", rawCurrentURL, rawBaseURL)
+		return
+	}
+
+	normalizedURL, err := normalizeUrl(rawCurrentURL)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	count, ok := pages[normalizedURL]
+	if ok {
+		fmt.Printf("Already crawled %v %v times\n", rawCurrentURL, count)
+		pages[normalizedURL] = count + 1
+	} else {
+		pages[normalizedURL] = 1
+		fmt.Printf("Crawling %v...\n", rawCurrentURL)
+		html, err := getHTML(rawCurrentURL)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		pageData, err := extractPageData(html, rawCurrentURL)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		fmt.Printf("Page title: %v\n", pageData.Heading)
+		fmt.Printf("Page outgoing links count: %v\n", len(pageData.OutgoingLinks))
+		for _, link := range pageData.OutgoingLinks {
+			crawlPage(rawBaseURL, link, pages)
+		}
+	}
 }

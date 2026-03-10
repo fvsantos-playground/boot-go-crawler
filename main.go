@@ -25,11 +25,13 @@ func main() {
 
 	fmt.Printf("starting crawl of: %v\n", baseUrl)
 
-	data, err := getHTML(baseUrl.String())
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	// data, err := getHTML(baseUrl.String())
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	os.Exit(1)
+	// }
 
-	fmt.Println(data)
+	// fmt.Println(data)
+
+	crawlPage(baseUrl.String(), baseUrl.String(), map[string]int{})
 }
