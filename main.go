@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net/url"
 	"os"
 )
 
@@ -17,21 +16,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	baseUrl, err := url.Parse(args[0])
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	rawURL := args[0]
+	cfg := configure(rawURL, 10)
 
-	fmt.Printf("starting crawl of: %v\n", baseUrl)
+	fmt.Printf("starting crawl of: %v\n", rawURL)
+	// cfg.wg.Add(1)
+	// go cfg.crawlPage(rawURL)
 
-	// data, err := getHTML(baseUrl.String())
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	os.Exit(1)
-	// }
+	cfg.wg.Go(func() {
+		cfg.crawlPage(rawURL)
+	})
 
-	// fmt.Println(data)
-
-	crawlPage(baseUrl.String(), baseUrl.String(), map[string]int{})
+	cfg.wg.Wait()
+	fmt.Printf("finished crawling %v\n", rawURL)
 }
