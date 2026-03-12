@@ -9,6 +9,11 @@ func (cfg *config) crawlPage(rawCurrentURL string) {
 	cfg.concurrencyControl <- struct{}{}
 	defer func() { <-cfg.concurrencyControl }()
 
+	if len(cfg.pages) >= cfg.maxPages {
+		fmt.Printf("Reached the maximum number of pages to crawl: %v\n", cfg.maxPages)
+		return
+	}
+
 	currentURL, err := url.Parse(rawCurrentURL)
 	if err != nil {
 		fmt.Println(err)
