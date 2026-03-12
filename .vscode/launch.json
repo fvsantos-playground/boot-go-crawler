@@ -10,7 +10,7 @@
       "request": "launch",
       "mode": "auto",
       "program": "${fileDirname}",
-      "args": ["https://wagslane.dev"]
+      "args": ["https://wagslane.dev", "3", "10"]
     }
   ]
 }

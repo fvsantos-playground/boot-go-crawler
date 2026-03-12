@@ -38,4 +38,6 @@ func main() {
 
 	cfg.wg.Wait()
 	fmt.Printf("finished crawling %v\n", rawURL)
+
+	writeJSONReport(cfg.pages, "report.json")
 }
